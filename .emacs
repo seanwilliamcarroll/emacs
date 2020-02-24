@@ -92,3 +92,91 @@
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
  )
+ (mapc
+  (lambda (face)
+    (set-face-attribute face nil :weight 'normal :underline nil))
+  (face-list))
+(cl-loop for face in (face-list) do
+         (unless (eq face 'default)
+           (set-face-attribute face nil :height 1.0)))
+
+(require 'package)
+(let* ((no-ssl (and (memq system-type '(windows-nt ms-dos))
+                    (not (gnutls-available-p))))
+       (proto (if no-ssl "http" "https")))
+  (when no-ssl
+    (warn "\
+Your version of Emacs does not support SSL connections,
+which is unsafe because it allows man-in-the-middle attacks.
+There are two things you can do about this warning:
+1. Install an Emacs version that does support SSL and be safe.
+2. Remove this warning from your init file so you won't see it again."))
+  ;; Comment/uncomment these two lines to enable/disable MELPA and MELPA Stable as desired
+  (add-to-list 'package-archives (cons "melpa" (concat proto "://melpa.org/packages/")) t)
+  ;;(add-to-list 'package-archives (cons "melpa-stable" (concat proto "://stable.melpa.org/packages/")) t)
+  (when (< emacs-major-version 24)
+    ;; For important compatibility libraries like cl-lib
+    (add-to-list 'package-archives (cons "gnu" (concat proto "://elpa.gnu.org/packages/")))))
+(package-initialize)
+(add-hook 'prog-mode-hook #'rainbow-delimiters-mode)
+
+(let ((default-directory "~/.emacs.d/qgrep/"))
+  (normal-top-level-add-to-load-path '("."))
+  (normal-top-level-add-subdirs-to-load-path))
+
+(autoload 'qgrep "qgrep" "Quick grep" t)
+(autoload 'qgrep-no-confirm "qgrep" "Quick grep" t)
+(autoload 'qgrep-confirm "qgrep" "Quick grep" t)
+(global-set-key (kbd "\C-c g") 'qgrep-no-confirm)
+(global-set-key (kbd "\C-c G") 'qgrep-confirm)
+;; Stricter filters
+(setq qgrep-default-find "find . \\( -wholename '*/.svn' -o -wholename '*/obj' -o -wholename '*/.git' -o -wholename '*/VCOMP' \\) -prune -o -type f \\( '!' -name '*atdesignerSave.ses' -a \\( '!' -name '*~' \\) -a \\( '!' -name '#*#' \\) -a \\( -name '*' \\) \\) -type f -print0")
+(setq qgrep-default-grep "grep -iI -nH -e \"%s\"")
+
+(add-to-list 'auto-mode-alist '("\\.bzl\\'" . python-mode))
+(add-to-list 'auto-mode-alist '("\\BUILD\\'" . python-mode))
+(add-to-list 'auto-mode-alist '("\\WORKSPACE\\'" . python-mode))
+(global-set-key [f1] (lambda () (interactive) (shell "*shell*")))
+(global-set-key [f2] (lambda () (interactive) (shell "*shell*<2>")))
+(global-set-key [f3] (lambda () (interactive) (shell "*shell*<3>")))
+(global-set-key [f4] (lambda () (interactive) (shell "*shell*<4>")))
+
+(defun to-underscore () (interactive) (progn (replace-regexp "\\([A-Z]\\)" "_\\1" nil (region-beginning) (region-end)) (downcase-region (region-beginning) (region-end))) )
+
+(setq ediff-split-window-function 'split-window-horizontally)
+(setq ediff-diff-options "-w")
+(setq ediff-control-frame-upward-shift 40)
+(setq ediff-narrow-control-frame-leftward-shift -30)
+(setq ediff-window-setup-function 'ediff-setup-windows-plain)
+
+(defun revert-all-buffers ()
+  "Refreshes all open buffers from their respective files."
+  (interactive)
+  (dolist (buf (buffer-list))
+    (with-current-buffer buf
+      (when (and (buffer-file-name) (file-exists-p (buffer-file-name)) (not (buffer-modified-p)))
+        (revert-buffer t t t) )))
+  (message "Refreshed open files.") )
+
+(defadvice occur (after rename-buf activate)
+  "Rename the occur buffer to be unique."
+  (save-excursion
+    (when (get-buffer "*Occur*")
+      (with-current-buffer "*Occur*"
+        (forward-line 0)
+        (let ((line (thing-at-point 'line))
+              (search)
+              (buffer))
+          (string-match "for \"\\(.*\\)\" in buffer: \\(.*\\)" line)
+          (setq search (match-string 1 line))
+          (setq buffer (match-string 2 line))
+          (rename-buffer (format "*Occur: %s:\"%s\"*" buffer search)))))))
+(ad-activate 'occur)
+
+
+(require 'desktop)
+(setq desktop-path '("/data/proj/scarroll/w5/"))
+(desktop-save-mode 1)
+
+(global-unset-key "\C-z")
+(fset 'yes-or-no-p 'y-or-n-p)
