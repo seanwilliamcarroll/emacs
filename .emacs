@@ -116,7 +116,6 @@ There are two things you can do about this warning:
   (when (< emacs-major-version 24)
     ;; For important compatibility libraries like cl-lib
     (add-to-list 'package-archives (cons "gnu" (concat proto "://elpa.gnu.org/packages/")))))
-(package-initialize)
 (add-hook 'prog-mode-hook #'rainbow-delimiters-mode)
 
 (let ((default-directory "~/.emacs.d/qgrep/"))
@@ -135,6 +134,7 @@ There are two things you can do about this warning:
 (add-to-list 'auto-mode-alist '("\\.bzl\\'" . python-mode))
 (add-to-list 'auto-mode-alist '("\\BUILD\\'" . python-mode))
 (add-to-list 'auto-mode-alist '("\\WORKSPACE\\'" . python-mode))
+(add-to-list 'auto-mode-alist '("\\.h\\'" . c++-mode))
 (global-set-key [f1] (lambda () (interactive) (shell "*shell*")))
 (global-set-key [f2] (lambda () (interactive) (shell "*shell*<2>")))
 (global-set-key [f3] (lambda () (interactive) (shell "*shell*<3>")))
@@ -172,34 +172,31 @@ There are two things you can do about this warning:
           (rename-buffer (format "*Occur: %s:\"%s\"*" buffer search)))))))
 (ad-activate 'occur)
 
-
-(require 'desktop)
-(setq desktop-path '("/data/proj/scarroll/w5/"))
-(desktop-save-mode 1)
-
 (global-unset-key "\C-z")
 (fset 'yes-or-no-p 'y-or-n-p)
 
+(set-face-attribute 'default (selected-frame) :height 120)
 
-(set-face-attribute 'default (selected-frame) :height 150)
-
-(require 'protobuf-mode)
+(require 'cc-mode)
+;; (require 'protobuf-mode)
 
 (add-to-list 'load-path "~/.emacs.d/el-get/el-get")
-
-(unless (require 'el-get nil 'noerror)
-  (with-current-buffer
-      (url-retrieve-synchronously
-       "https://raw.githubusercontent.com/dimitri/el-get/master/el-get-install.el")
-    (goto-char (point-max))
-    (eval-print-last-sexp)))
-
-(add-to-list 'el-get-recipe-path "~/.emacs.d/el-get-user/recipes")
-(el-get 'sync)
-(load "~/.emacs.d/el-get/clang-format/clang-format.el")
+(add-to-list 'load-path "~/.emacs.d/clang-format")
+(add-to-list 'load-path "~/.emacs.d")
 (require 'clang-format)
-(setq clang-format-style-option "google")
-(add-hook 'c-mode-common-hook
-          (function (lambda ()
-                    (add-hook 'before-save-hook
-                              'clang-format-buffer))))
+(defun format-and-save()
+  (interactive)
+  (clang-format-buffer)
+  (save-buffer))
+
+
+(define-key
+  c-mode-base-map
+  (kbd "C-x C-s")
+  'format-and-save)
+
+(when (>= emacs-major-version 24)
+  (require 'package)
+  (package-initialize)
+  (add-to-list 'package-archives '("melpa" . "http://melpa.milkbox.net/packages/") t)
+  )
