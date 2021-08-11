@@ -200,3 +200,7 @@ There are two things you can do about this warning:
   (package-initialize)
   (add-to-list 'package-archives '("melpa" . "http://melpa.milkbox.net/packages/") t)
   )
+
+(setq haskell-stylish-on-save t)
+
+(setq haskell-mode-stylish-haskell-path "/Users/sean/.cabal/bin/stylish-haskell")
