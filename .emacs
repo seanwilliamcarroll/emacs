@@ -84,7 +84,10 @@
  ;; If there is more than one, they won't work right.
  '(ansi-color-names-vector
    ["black" "#d55e00" "#009e73" "#f8ec59" "#0072b2" "#cc79a7" "#56b4e9" "white"])
- '(custom-enabled-themes (quote (manoj-dark))))
+ '(custom-enabled-themes '(manoj-dark))
+ '(haskell-stylish-on-save t)
+ '(package-selected-packages
+   '(markdown-mode haskell-mode rainbow-delimiters protobuf-mode yasnippet exec-path-from-shell ##)))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
@@ -181,26 +184,34 @@ There are two things you can do about this warning:
 ;; (require 'protobuf-mode)
 
 (add-to-list 'load-path "~/.emacs.d/el-get/el-get")
-(add-to-list 'load-path "~/.emacs.d/clang-format")
-(add-to-list 'load-path "~/.emacs.d")
-(require 'clang-format)
-(defun format-and-save()
-  (interactive)
-  (clang-format-buffer)
-  (save-buffer))
+;; (add-to-list 'load-path "~/.emacs.d/clang-format")
+;; (add-to-list 'load-path "~/.emacs.d")
+;; (require 'clang-format)
+;; (defun format-and-save()
+;;   (interactive)
+;;   (clang-format-buffer)
+;;   (save-buffer))
 
 
-(define-key
-  c-mode-base-map
-  (kbd "C-x C-s")
-  'format-and-save)
-
-(when (>= emacs-major-version 24)
-  (require 'package)
-  (package-initialize)
-  (add-to-list 'package-archives '("melpa" . "http://melpa.milkbox.net/packages/") t)
-  )
+;; (define-key
+;;   c-mode-base-map
+;;   (kbd "C-x C-s")
+;;   'format-and-save)
 
 (setq haskell-stylish-on-save t)
 
 (setq haskell-mode-stylish-haskell-path "/Users/sean/.cabal/bin/stylish-haskell")
+
+(autoload 'markdown-mode "markdown-mode"
+   "Major mode for editing Markdown files" t)
+(add-to-list 'auto-mode-alist '("\\.markdown\\'" . markdown-mode))
+(add-to-list 'auto-mode-alist '("\\.md\\'" . markdown-mode))
+(autoload 'gfm-mode "markdown-mode"
+   "Major mode for editing GitHub Flavored Markdown files" t)
+(add-to-list 'auto-mode-alist '("README\\.md\\'" . gfm-mode))
+
+;; (custom-set-variables
+;;  '(markdown-command "/usr/local/bin/pandoc"))
+
+(global-set-key (kbd "<home>") 'beginning-of-line)
+(global-set-key (kbd "<end>") 'end-of-line)
