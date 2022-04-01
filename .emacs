@@ -215,3 +215,5 @@ There are two things you can do about this warning:
 
 (global-set-key (kbd "<home>") 'beginning-of-line)
 (global-set-key (kbd "<end>") 'end-of-line)
+
+(setq ring-bell-function 'ignore)
